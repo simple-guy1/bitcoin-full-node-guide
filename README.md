@@ -1,4 +1,4 @@
-x# bitcoin-full-node
+# bitcoin-full-node
 this repository serves me as guide for installing bitcoin full node on home linux server<br>
 
 I am writing this guide for myself in case I will need to go over bitcoin full node (and related services) again in the future. 
@@ -24,7 +24,7 @@ I want some reliable linux distribution so I did some quick research and came up
 
 Luckily this Debian version doesn't require any additional tweaking and everything worked out of the box.<br>
 
-To work mork effitiently I use combination of zsh and starship installed according 
+To work more efficiently I use combination of zsh and starship installed according 
 to this [tuotiral](https://harshithashok.com/tools/oh-my-zsh-with-starship/).
 
 
@@ -60,9 +60,9 @@ specifically [ubuntu and
 debian](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#ubuntu--debian) 
 version.<br>
 
-Once Bitcoin Core is setup I can run it as deamon with command `bitcoind -daemon` to start Bitcoin Core main chain. In be able to do [IBD](https://btcinformation.org/en/glossary/initial-block-download), I have to allow incoming connetion on **Bitcoin port 8333** with `ufw allow 8333`<br>
+Once Bitcoin Core is setup I can run it as daemon with command `bitcoind -daemon` to start Bitcoin Core main chain. In be able to do [IBD](https://btcinformation.org/en/glossary/initial-block-download), I have to allow incoming connection on **Bitcoin port 8333** with `ufw allow 8333`<br>
 
-To start Bitcoin Core tesnet chain I have to run `bitcoind -testnet -daemon` and allow incoming connection on port *18333* with `ufw allow 18333`<br>
+To start Bitcoin Core testnet chain I have to run `bitcoind -testnet -daemon` and allow incoming connection on port *18333* with `ufw allow 18333`<br>
 
 Next step is to config Bitcoin Core via [Jameson Lopp's Bitcoin Core Generator](https://jlopp.github.io/bitcoin-core-config-generator/). My current setup looks like this:
 ```
@@ -86,3 +86,12 @@ debug=1
 logips=1
 ```
 As guide says this config has to be placed in `~/.bitcoin/bitcoin.conf`
+
+### Bitcoin Core runs as service and automatically starts after server restart
+For running Bitcoin Core as a service I followed this [guide](https://gist.github.com/jeffrade/0b730d226ff6f6b985f802d3c9191023) which was quite straightforward. I created second service to run Bitcoin Core on testnet as well. I found these two articles about multiple Bitcoin chains running on same servers. Maybe someone found them useful: [article 1](https://raphtyosaze.medium.com/how-to-run-multiple-bitcoin-blockchain-networks-on-the-same-computer-4efa031e7d26), [article 2](https://number1.co.za/running-a-mainnet-and-testnet-on-the-same-bitcoin-node/)
+
+## Recap what has been done so far
+- set up old laptop as debian server
+- connect other laptop to the server via ssh
+- install Bitcoin Core from official github repository on the server
+- set up Bitcoin Core daemons for main and test nets running as services
