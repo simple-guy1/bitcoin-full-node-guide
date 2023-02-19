@@ -94,3 +94,12 @@ For running Bitcoin Core as a service I followed this [guide](https://gist.githu
 - connect other laptop to the server via ssh
 - install Bitcoin Core from official github repository on the server
 - set up Bitcoin Core daemons for main and test nets running as services
+
+## Install Electrum Server on the server
+To be able to work with Bitcoin blockchain data I need indexed blockchain. For that purpose I chose [electrs](https://github.com/romanz/electrs).
+**goal of this section:** Electrum Server is isntalled and runs as service, which starts automatically after server restarts<br>
+
+Installation and initial setup was done following official [documentation](https://github.com/romanz/electrs/blob/master/doc/install.md) together with two parts videos on youtube: [part 1](https://www.youtube.com/watch?v=mbG7hBMWQrs), [part 2](https://www.youtube.com/watch?v=IbOxgdHsyRI)<br>
+
+
+
