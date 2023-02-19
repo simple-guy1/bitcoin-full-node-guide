@@ -27,7 +27,6 @@ Luckily this Debian version doesn't require any additional tweaking and everythi
 To work more efficiently I use combination of zsh and starship installed according 
 to this [tuotiral](https://harshithashok.com/tools/oh-my-zsh-with-starship/).
 
-
 ## server initial setup
 **goal of this section:**  daily user has sudo permissions, laptop works with closed lid, client can ssh to server
 
