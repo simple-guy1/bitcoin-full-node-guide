@@ -1,22 +1,22 @@
 # bitcoin-full-node
-this repository serves me as guide for installing bitcoin full node on home linux server<br>
+this repository serves me as guide for installing bitcoin full node on home Linux server<br>
 
-I am writing this guide for myself in case I will need to go over bitcoin full node (and related services) again in the future. 
-I am not an expert in bitcoin neither linux, but I haven't found all-in-one guide covering path "from 0 to hero" anywhere on 
-the internet so I have decided to create one for myself. I would like to ask potential other readers (if any), open issue or 
-even better open PR, in case you will find some mistake, I am in the just a simple guy.
+I am writing this guide for myself in case I will need to go over Bitcoin full node (and related services) again in the future. 
+I am not an expert in Bitcoin neither Linux, but I haven't found all-in-one guide covering path "from 0 to hero" anywhere on 
+the internet, so I have decided to create one for myself. I would like to ask potential other readers (if any), open issue or 
+even better open PR, in case you will find some mistake, I am in the end just a simple guy.
 
 ## setup
 - old laptop Lenovo Thinkpad X240 with 8GB RAM and 1TB SSD (server)
 - old Macboook Pro (client)
 
-I want to use old Lenovo as a server hosting all bitcoin related services and my Macbook Pro as client from which I will ssh 
+I want to use old Lenovo as a server hosting all Bitcoin related services and my Macbook Pro as client from which I will ssh 
 into server and use other connected service through web browser.
 
 ## server OS 
-**goal of this section:** to have clean installation of linux distribution
+**goal of this section:** to have clean installation of Linux distribution
 
-I want some reliable linux distribution so I did some quick research and came up with idea that Debian is the way. I found this 
+I want some reliable Linux distribution so I did some quick research and came up with idea that Debian is the way. I found this 
 [video](https://youtu.be/CJ41KZ0fBMc) where the guy explains installation fairly simply. After creating booting USB (16GB) with 
 [balena etcher](https://www.balena.io/etcher) I installed:
 - Debian bookworm with weekly updates
@@ -39,25 +39,13 @@ To disable sleep after closing laptop lid I update (uncomment and change) `Handl
 which ensures that after opening lid user password is required.<br>
 
 To be able to connect from my client laptop to the linux server I had to setup `openssh-server` according to this 
-[guide](https://phoenixnap.com/kb/how-to-enable-ssh-on-debian), which required to install `UFW` firewall via `sudo apt install 
-ufw`. After installing **ufw** it is necessary to turn it on with `sudo ufw enable` 
-and set **ufw** default to `sudo ufw default deny incoming` which denies every 
-incoming connection except ssh. I faced a small issue, because this 
-wasn't my first server setup I had to reset server's fingerprint on my client with 
-command `ssh-keygen -R <IP address of the server>`. To ssh into server without inserting user password run `ssh-copy-id -i 
-~/.ssh/<client-ssh-key>.pub <server-ip-address>`
-
+[guide](https://phoenixnap.com/kb/how-to-enable-ssh-on-debian). For a firewall I didnt use ufw as I had some issues with it and open ports directly in **iptables**. First thing which I had to do is to enable SSH connection to the server. I followed this straightforward [tutorial](https://www.baeldung.com/linux/ssh-access-using-iptables). Once I enabled SSH I had to upload my client's SSH key to the server. I faced a small issue, because this wasn't my first server setup I had to reset server's fingerprint on my client with command `ssh-keygen -R <IP address of the server>`. To ssh into server without inserting user password run `ssh-copy-id -i ~/.ssh/<client-ssh-key>.pub <server-ip-address>`.
 
 ## Bitcoin Core on the server
 **goal of this section:** Bitcoin Core (mainnet, testnet) runs as daemon and starts automatically after server restart
 
 ### Bitcoin Core initial setup
-As I plan to potentially develop features in Bitcoin Core I want to have version 
-built from github repository. For that I followed the notes for [unix build 
-notes](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md) and 
-specifically [ubuntu and 
-debian](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#ubuntu--debian) 
-version.<br>
+As I plan to potentially develop features in Bitcoin Core I want to have version built from github repository. For that I followed the notes for [unix build notes](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md) and specifically [ubuntu and debian](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#ubuntu--debian) version.<br>
 
 Once Bitcoin Core is setup I can run it as daemon with command `bitcoind -daemon` to start Bitcoin Core main chain. In be able to do [IBD](https://btcinformation.org/en/glossary/initial-block-download), I have to allow incoming connection on **Bitcoin port 8333** with `ufw allow 8333`<br>
 
@@ -89,13 +77,13 @@ As guide says this config has to be placed in `~/.bitcoin/bitcoin.conf`
 ### Bitcoin Core runs as service and automatically starts after server restart
 For running Bitcoin Core as a service I followed this [guide](https://gist.github.com/jeffrade/0b730d226ff6f6b985f802d3c9191023) which was quite straightforward. I created second service to run Bitcoin Core on testnet as well. I found these two articles about multiple Bitcoin chains running on same servers. Maybe someone found them useful: [article 1](https://raphtyosaze.medium.com/how-to-run-multiple-bitcoin-blockchain-networks-on-the-same-computer-4efa031e7d26), [article 2](https://number1.co.za/running-a-mainnet-and-testnet-on-the-same-bitcoin-node/)
 
-## Recap what has been done so far
+## recap what has been done so far
 - set up old laptop as debian server
 - connect other laptop to the server via ssh
 - install Bitcoin Core from official github repository on the server
 - set up Bitcoin Core daemons for main and test nets running as services
 
-## Install Electrum Server on the server
+## install Electrum Server on the server
 To be able to work with Bitcoin blockchain data I need indexed blockchain. For that purpose I chose [electrs](https://github.com/romanz/electrs).<br>
 
 **goal of this section:** Electrum Server is isntalled and runs as service, which starts automatically after server is restarted<br>
@@ -176,3 +164,10 @@ RestartSec=60
 [Install]
 WantedBy=multi-user.target
 ```
+
+## install Electrum wallet on the server
+To became self sorveign on Bitcoin network I have to start using wallet connected to my Electrum server. As first I will try the most straightforward solution - Electrum wallet. This wallet is possible to install multiple ways. I will try the simpliest one - install through GUI on the server. I can do it, because my server is laptop.
+
+**goal of this section:** Install Electrum wallet on the server via GUI and connect it to my Elctrum server.
+
+I download source code/Appimage and signatures from this [webpage](https://electrum.org/#download) and install it on the server. 
