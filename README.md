@@ -182,7 +182,6 @@ I download source code/Appimage and signatures from this [webpage](https://elect
 Before I can connect from my client's laptop to the server I need to open ports on there. For that I have updated `/etc/iptables/rules.v4` where I added:
 ```
 # connections to the electrs and electrs-tesnet ports
-```
 -A TCP -p tcp -m tcp --dport 50001 -j ACCEPT
 -A TCP -p tcp -m tcp --dport 60001 -j ACCEPT
 ```  
