@@ -39,7 +39,7 @@ To disable sleep after closing laptop lid I update (uncomment and change) `Handl
 which ensures that after opening lid user password is required.<br>
 
 To be able to connect from my client laptop to the linux server I had to setup `openssh-server` according to this 
-[guide](https://phoenixnap.com/kb/how-to-enable-ssh-on-debian). For a firewall I didnt use ufw as I had some issues with it and open ports directly in **iptables** following this [tutorial](https://adamtheautomator.com/iptables-rules/).<br>
+[guide](https://phoenixnap.com/kb/how-to-enable-ssh-on-debian). For a firewall I didnt use ufw as I had some issues with it and open ports directly in **iptables** following this [tutorial](https://adamtheautomator.com/iptables-rules/). Regarding iptables tables I found [this repository](https://github.com/trimstray/iptables-essentials#debian-based), which has a ton of useful info.<br>
 
 Once I enabled SSH I had to upload my client's SSH key to the server. I faced a small issue, because this wasn't my first server setup I had to reset server's fingerprint on my client with command `ssh-keygen -R <IP address of the server>`. To ssh into server without inserting user password run `ssh-copy-id -i ~/.ssh/<client-ssh-key>.pub <server-ip-address>`.
 
@@ -178,7 +178,7 @@ To became self sorveign on Bitcoin network I have to start using wallet connecte
 ### isntall Electrum wallet on the server
 I download source code/Appimage and signatures from this [webpage](https://electrum.org/#download) and install it on the server. Then I followed this straightforward [video](https://youtu.be/mbG7hBMWQrs?t=410) and connected to my Electrum server - in that case I had exposed my servers on **127.0.0.1**. Everything works smoothly as expected.
 
-## install Electrum wallet on the client
+### install Electrum wallet on the client
 Before I can connect from my client's laptop to the server I need to open ports on there. For that I have updated `/etc/iptables/rules.v4` where I added:
 ```
 # connections to the electrs and electrs-tesnet ports
