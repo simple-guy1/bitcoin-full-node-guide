@@ -1,9 +1,9 @@
-# bitcoin-full-node
-this repository serves me as guide for installing bitcoin full node on home Linux server<br>
+# Bitcoin full node guide
+this repository serves me as guide for installing Bitcoin full node on home Linux server<br>
 
-I am writing this guide for myself in case I will need to go over Bitcoin full node (and related services) again in the future. 
+I am writing this guide for myself in case I will need to go over Bitcoin full node (and related services) installation again in the future. 
 I am not an expert in Bitcoin neither Linux, but I haven't found all-in-one guide covering path "from 0 to hero" anywhere on 
-the internet, so I have decided to create one for myself. I would like to ask potential other readers (if any), open issue or 
+the internet yet, so I have decided to create one for myself. I would like to ask potential other readers (if any), open issue or 
 even better open PR, in case you will find some mistake, I am in the end just a simple guy.
 
 ## setup
@@ -28,7 +28,7 @@ To work more efficiently I use combination of zsh and starship installed accordi
 to this [tuotiral](https://harshithashok.com/tools/oh-my-zsh-with-starship/).
 
 ## server initial setup
-**goal of this section:**  daily user has sudo permissions, laptop works with closed lid, client can ssh to server
+**goal of this section:** daily user has sudo permissions, laptop works with closed lid, client can ssh to server
 
 During installation I created root user and my daily user, which I added to sudoers group following this 
 [guide](https://linuxize.com/post/how-to-add-user-to-sudoers-in-debian/).<br>
@@ -39,7 +39,9 @@ To disable sleep after closing laptop lid I update (uncomment and change) `Handl
 which ensures that after opening lid user password is required.<br>
 
 To be able to connect from my client laptop to the linux server I had to setup `openssh-server` according to this 
-[guide](https://phoenixnap.com/kb/how-to-enable-ssh-on-debian). For a firewall I didnt use ufw as I had some issues with it and open ports directly in **iptables**. First thing which I had to do is to enable SSH connection to the server. I followed this straightforward [tutorial](https://www.baeldung.com/linux/ssh-access-using-iptables). Once I enabled SSH I had to upload my client's SSH key to the server. I faced a small issue, because this wasn't my first server setup I had to reset server's fingerprint on my client with command `ssh-keygen -R <IP address of the server>`. To ssh into server without inserting user password run `ssh-copy-id -i ~/.ssh/<client-ssh-key>.pub <server-ip-address>`.
+[guide](https://phoenixnap.com/kb/how-to-enable-ssh-on-debian). For a firewall I didnt use ufw as I had some issues with it and open ports directly in **iptables** following this [tutorial](https://adamtheautomator.com/iptables-rules/).<br>
+
+Once I enabled SSH I had to upload my client's SSH key to the server. I faced a small issue, because this wasn't my first server setup I had to reset server's fingerprint on my client with command `ssh-keygen -R <IP address of the server>`. To ssh into server without inserting user password run `ssh-copy-id -i ~/.ssh/<client-ssh-key>.pub <server-ip-address>`.
 
 ## Bitcoin Core on the server
 **goal of this section:** Bitcoin Core (mainnet, testnet) runs as daemon and starts automatically after server restart
@@ -90,6 +92,8 @@ To be able to work with Bitcoin blockchain data I need indexed blockchain. For t
 
 Installation and initial setup was done following official [documentation](https://github.com/romanz/electrs/blob/master/doc/install.md) together with two parts videos on youtube: [part 1](https://www.youtube.com/watch?v=mbG7hBMWQrs), [part 2](https://www.youtube.com/watch?v=IbOxgdHsyRI)<br>
 
+Only change was from the video's configuration is to expose server to **0.0.0.0** as I want to access the servers from client and I haven't been able to setup iptables to properly forward outcoming connection to these ports to **127.0.0.1**.<br>
+
 My electrs config for mainnet looks like this:
 ```
 network = "bitcoin"
@@ -97,7 +101,8 @@ daemon_dir= "$HOME/.bitcoin"
 daemon_rpc_addr = "127.0.0.1:8332"
 daemon_p2p_addr = "127.0.0.1:8333"
 
-electrum_rpc_addr = "127.0.0.1:50001"
+electrum_rpc_addr = "0.0.0.0:50001"
+monitoring_addr = "0.0.0.0:4225"
 db_dir = "home/user/.electrs/db"
 index_lookup_limit = 1000
 
@@ -111,8 +116,8 @@ daemon_dir= "/home/jirigrill/.bitcoin"
 daemon_rpc_addr = "127.0.0.1:18332"
 daemon_p2p_addr = "127.0.0.1:18333"
 
-electrum_rpc_addr = "127.0.0.1:60001"
-monitoring_addr = "127.0.0.1:4226"
+electrum_rpc_addr = "0.0.0.0:60001"
+monitoring_addr = "0.0.0.0:4226"
 db_dir = "/home/user/.electrs/testnet/db"
 index_lookup_limit = 1000
 
@@ -142,7 +147,7 @@ debug=1
 logips=1
 rpcauth=electrs:<hashed-password>
 ```
-Once Electrum Server is ready to be used I can create Electrum system service in a similar way as for Bitcoind. As template I use this [sample](https://github.com/romanz/electrs/blob/master/doc/config.md#sample-systemd-unit-file) where I have to only modify paths to directories and db.
+Once Electrum Server is ready to be used I can create Electrum system service in a similar way as for Bitcoind. As template I use this [sample](https://github.com/romanz/electrs/blob/master/doc/config.md#sample-systemd-unit-file) where I have to only modify paths to directories and db.<br>
 
 systemd service definition:
 ```
@@ -165,9 +170,49 @@ RestartSec=60
 WantedBy=multi-user.target
 ```
 
-## install Electrum wallet on the server
-To became self sorveign on Bitcoin network I have to start using wallet connected to my Electrum server. As first I will try the most straightforward solution - Electrum wallet. This wallet is possible to install multiple ways. I will try the simpliest one - install through GUI on the server. I can do it, because my server is laptop.
+## install Electrum wallet
+To became self sorveign on Bitcoin network I have to start using wallet connected to my Electrum server. As first I will try the most straightforward solution - Electrum wallet. This wallet is possible to install multiple ways. I will try the simpliest one - install through GUI. I can do it, because my both my solutions are laptops.
 
-**goal of this section:** Install Electrum wallet on the server via GUI and connect it to my Elctrum server.
+**goal of this section:** Install Electrum wallet on the server and clent via GUI and connect it to my Elctrum servers.
 
-I download source code/Appimage and signatures from this [webpage](https://electrum.org/#download) and install it on the server. 
+### isntall Electrum wallet on the server
+I download source code/Appimage and signatures from this [webpage](https://electrum.org/#download) and install it on the server. Then I followed this straightforward [video](https://youtu.be/mbG7hBMWQrs?t=410) and connected to my Electrum server - in that case I had exposed my servers on **127.0.0.1**. Everything works smoothly as expected.
+
+## install Electrum wallet on the client
+Before I can connect from my client's laptop to the server I need to open ports on there. For that I have updated `/etc/iptables/rules.v4` where I added:
+```
+# connections to the electrs and electrs-tesnet ports
+```
+-A TCP -p tcp -m tcp --dport 50001 -j ACCEPT
+-A TCP -p tcp -m tcp --dport 60001 -j ACCEPT
+```  
+and then run `sudo service netfilter-persistent reload` to uptake new rules.<br>
+
+As my client is running Mac OS I downloaded wallet's Mac OS image and install the app and then run `open -n /Applications/Electrum.app` and `open -n /Applications/Electrum.app --args --testnet` for testnet. It creates `.electrum` folder where I have udpated config:
+```
+"auto_connect": false,
+"blockchain_preferred_block": {
+    "hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+    "height": 0
+},
+"check_updates": true,
+"config_version": 3,
+"decimal_point": 0,
+"gui_last_wallet": "/Users/admin/.electrum/wallets/default_wallet",
+"is_maximized": false,
+"oneserver": true,
+"qrreader_flip_x": true,
+"qt_gui_color_theme": "dark",
+"receive_qr_visible": true,
+"receive_tabs_index": 0,
+"recently_open": [
+    "/Users/admin/.electrum/wallets/default_wallet",
+    "/Users/admin/.electrum/wallets/wallet_1"
+],
+"request_expiry": 0,
+"rpcpassword": "<rpc-password>",
+"rpcuser": "user",
+"server": "192.168.0.108:50001:t",
+"show_channels_tab": true
+```
+and in similar way for the testnet wallet. 
