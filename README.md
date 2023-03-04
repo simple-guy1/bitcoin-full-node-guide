@@ -180,7 +180,10 @@ I download source code/Appimage and signatures from this [webpage](https://elect
 Before I can connect from my client's laptop to the server I need to install proxy server and open ports to be able to connect from client outside of the server.
 
 #### install proxy server
-The whole process is very clearly exlained in the second already mentioned [video](https://youtu.be/IbOxgdHsyRI). Only thing which I had an issue with was that I missed package `libnginx-mod-stream` when I was run nginx in reverse proxy mode. This was solved by installing the package by running `sudo apt install libnginx-mod-stream`. Once I was done with nginx server, I updated my iptables config:
+The whole process is very clearly exlained in the second already mentioned [video](https://youtu.be/IbOxgdHsyRI). Only thing which I had an issue with was that I missed package `libnginx-mod-stream` when I was run nginx in reverse proxy mode. This was solved by installing the package by running `sudo apt install libnginx-mod-stream`.
+
+#### open server's port
+Once I was done with nginx server, I updated my iptables config:
 
 ```
 -A TCP -p tcp -m tcp --dport 50002 -j ACCEPT
@@ -192,6 +195,7 @@ and then run `sudo service netfilter-persistent reload` to uptake new rules and 
 The final setup looks like:
 ![reverse-proxy-setup](./pics/reverse-proxy-setup.png)
 
+#### electrum wallet on the client
 As my client is running Mac OS I downloaded wallet's Mac OS image and install the app and then run `open -n /Applications/Electrum.app` and `open -n /Applications/Electrum.app --args --testnet` for testnet. It creates `.electrum` folder where I have udpated config:
 ```
 "auto_connect": false,
