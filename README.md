@@ -92,8 +92,6 @@ To be able to work with Bitcoin blockchain data I need indexed blockchain. For t
 
 Installation and initial setup was done following official [documentation](https://github.com/romanz/electrs/blob/master/doc/install.md) together with two parts videos on youtube: [part 1](https://www.youtube.com/watch?v=mbG7hBMWQrs), [part 2](https://www.youtube.com/watch?v=IbOxgdHsyRI)<br>
 
-Only change was from the video's configuration is to expose server to **0.0.0.0** as I want to access the servers from client and I haven't been able to setup iptables to properly forward outcoming connection to these ports to **127.0.0.1**.<br>
-
 My electrs config for mainnet looks like this:
 ```
 network = "bitcoin"
@@ -101,8 +99,8 @@ daemon_dir= "$HOME/.bitcoin"
 daemon_rpc_addr = "127.0.0.1:8332"
 daemon_p2p_addr = "127.0.0.1:8333"
 
-electrum_rpc_addr = "0.0.0.0:50001"
-monitoring_addr = "0.0.0.0:4225"
+electrum_rpc_addr = "127.0.0.1:50001"
+monitoring_addr = "127.0.0.1:4225"
 db_dir = "home/user/.electrs/db"
 index_lookup_limit = 1000
 
@@ -116,8 +114,8 @@ daemon_dir= "/home/jirigrill/.bitcoin"
 daemon_rpc_addr = "127.0.0.1:18332"
 daemon_p2p_addr = "127.0.0.1:18333"
 
-electrum_rpc_addr = "0.0.0.0:60001"
-monitoring_addr = "0.0.0.0:4226"
+electrum_rpc_addr = "127.0.0.1:60001"
+monitoring_addr = "127.0.0.1:4226"
 db_dir = "/home/user/.electrs/testnet/db"
 index_lookup_limit = 1000
 
@@ -176,16 +174,23 @@ To became self sorveign on Bitcoin network I have to start using wallet connecte
 **goal of this section:** Install Electrum wallet on the server and clent via GUI and connect it to my Elctrum servers.
 
 ### isntall Electrum wallet on the server
-I download source code/Appimage and signatures from this [webpage](https://electrum.org/#download) and install it on the server. Then I followed this straightforward [video](https://youtu.be/mbG7hBMWQrs?t=410) and connected to my Electrum server - in that case I had exposed my servers on **127.0.0.1**. Everything works smoothly as expected.
+I download source code/Appimage and signatures from this [webpage](https://electrum.org/#download) and install it on the server. Then I followed this straightforward [video](https://youtu.be/mbG7hBMWQrs?t=410) and connected to my Electrum server smoothly.
 
 ### install Electrum wallet on the client
-Before I can connect from my client's laptop to the server I need to open ports on there. For that I have updated `/etc/iptables/rules.v4` where I added:
+Before I can connect from my client's laptop to the server I need to install proxy server and open ports to be able to connect from client outside of the server.
+
+#### install proxy server
+The whole process is very clearly exlained in the second already mentioned [video](https://youtu.be/IbOxgdHsyRI). Only thing which I had an issue with was that I missed package `libnginx-mod-stream` when I was run nginx in reverse proxy mode. This was solved by installing the package by running `sudo apt install libnginx-mod-stream`. Once I was done with nginx server, I updated my iptables config:
+
 ```
-# connections to the electrs and electrs-tesnet ports
--A TCP -p tcp -m tcp --dport 50001 -j ACCEPT
--A TCP -p tcp -m tcp --dport 60001 -j ACCEPT
-```  
-and then run `sudo service netfilter-persistent reload` to uptake new rules.<br>
+-A TCP -p tcp -m tcp --dport 50002 -j ACCEPT
+-A TCP -p tcp -m tcp --dport 60002 -j ACCEPT
+```
+
+and then run `sudo service netfilter-persistent reload` to uptake new rules and then `sudo service netfilter-persistent save` to store the change.<br>
+
+The final setup looks like:
+![reverse-proxy-setup](./pics/reverse-proxy-setup.png)
 
 As my client is running Mac OS I downloaded wallet's Mac OS image and install the app and then run `open -n /Applications/Electrum.app` and `open -n /Applications/Electrum.app --args --testnet` for testnet. It creates `.electrum` folder where I have udpated config:
 ```
@@ -211,8 +216,17 @@ As my client is running Mac OS I downloaded wallet's Mac OS image and install th
 "request_expiry": 0,
 "rpcpassword": "<rpc-password>",
 "rpcuser": "user",
-"server": "192.168.0.108:50001:t",
+"server": "192.168.0.108:50002:s",
 "show_channels_tab": true
 ```
 and in similar way for the testnet wallet. This is how does it look like on my client now:
 ![client electrums wallets](./pics/screenshot-client-electrum-wallets.png)
+
+## recap what has been done so far
+- set up old laptop as debian server
+- connect other laptop to the server via ssh
+- install Bitcoin Core from official github repository on the server
+- set up Bitcoin Core daemons for main and test nets running as services
+- install electrum server, connect it to Bitcoin Core and sync mainnet and testnet
+- isntall nginx on the server and set it up as reverse proxy, open ports 50002 and 60002 for incoming connection
+- install electrum wallets on the client and connect them to the electrum servers
