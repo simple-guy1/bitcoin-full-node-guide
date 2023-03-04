@@ -214,4 +214,5 @@ As my client is running Mac OS I downloaded wallet's Mac OS image and install th
 "server": "192.168.0.108:50001:t",
 "show_channels_tab": true
 ```
-and in similar way for the testnet wallet. 
+and in similar way for the testnet wallet. This is how does it look like on my client now:
+![client electrums wallets](./pics/screenshot-client-electrum-wallets.png)
