@@ -221,3 +221,79 @@ and in similar way for the testnet wallet. This is how does it look like on my c
 - install Fulcrum server, connect it to Bitcoin Core and sync mainnet and testnet
 - isntall nginx on the server and set it up as reverse proxy, open ports 50002 and 60002 for incoming connection
 - install electrum wallets on the client and connect them to the Fulcrum servers
+
+## install mempool.space
+To have full visibility into blckchain we need to have own hosted blockain explorer. And what else to use than the best in the class [mempool.space](https://github.com/mempool/mempool). <br>
+
+For installation I follow Ministry of Nodes [tutorial](https://www.youtube.com/watch?v=I2SzBqcsXaE&t=229s), which is using mempool's Docker implementation. The installation process is super straighforward. 
+
+my version of `docker-compose.yml`:
+```
+version: "3.7"
+
+services:
+  
+  web:
+    environment:
+      FRONTEND_HTTP_PORT: "8080"
+      BACKEND_MAINNET_HTTP_HOST: "api"
+    image: mempool/frontend:latest
+    user: "1000:1000"
+    restart: always
+    stop_grace_period: 1m
+    command: "./wait-for db:3306 --timeout=720 -- nginx -g 'daemon off;'"
+    ports:
+      - 4080:8080
+
+  api:
+    environment:
+      MEMPOOL_NETWORK: "mainnet"
+      MEMPOOL_BACKEND: "electrum"
+      ELECTRUM_HOST: "192.168.0.108"
+      ELECTRUM_PORT: "50002"
+      ELECTRUM_TLS_ENABLED: "true"
+      CORE_RPC_HOST: "192.168.0.108"
+      CORE_RPC_PORT: "8332"
+      CORE_RPC_USERNAME: "<username>"
+      CORE_RPC_PASSWORD: "<password>"
+      DATABASE_ENABLED: "true"
+      DATABASE_HOST: "db"
+      DATABASE_DATABASE: "mempool"
+      DATABASE_USERNAME: "mempool"
+      DATABASE_PASSWORD: "mempool"
+      STATISTICS_ENABLED: "true"
+    image: mempool/backend:latest
+    user: "1000:1000"
+    restart: always
+    stop_grace_period: 1m
+    command: "./wait-for-it.sh db:3306 --timeout=720 --strict -- ./start.sh"
+    volumes:
+      - ./data:/backend/cache
+
+  db:
+    environment:
+      MYSQL_DATABASE: "mempool"
+      MYSQL_USER: "mempool"
+      MYSQL_PASSWORD: "mempool"
+      MYSQL_ROOT_PASSWORD: "admin"
+    image: mariadb:10.5.8
+    user: "1000:1000"
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.57.0/24
+```
+In order to be able to connect to server on mempool's server I have updated iptables with
+
+```
+-A TCP -p tcp -m tcp --dport 4080 -j ACCEPT
+```
+
+Once mempool is ready to be run in background I start it with command `docker-compose up -d` which composes docker containers in background.
